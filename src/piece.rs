@@ -1,5 +1,10 @@
 const UNIQUE_PIECES: usize = 6;
 
+pub struct MoveVector {
+    row: usize,
+    col: usize,
+}
+
 #[derive(Copy, Clone, Debug)]
 pub enum Side {
     White,
@@ -68,4 +73,6 @@ impl Piece {
         };
         format!("assets/textures/pieces/{}{}.png", side, kind)
     }
+
+    pub fn get_move_vector(&self) -> &[]
 }

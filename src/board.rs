@@ -1,5 +1,3 @@
-use std::fmt::Debug;
-
 use crate::piece::{Kind, Piece, Side};
 use crate::renderer::Renderer;
 
@@ -70,6 +68,8 @@ impl Board {
         }
     }
 
+    fn show_options(&self, piece: Piece) {}
+
     pub fn draw(&self, renderer: &Renderer) {
         for row in 0..BOARD_SIZE {
             for col in 0..BOARD_SIZE {
@@ -106,7 +106,7 @@ impl Board {
 
         if let Some(active) = &self.active {
             let mut color = YELLOW;
-            color.a *= 0.5;
+            color.a *= 0.2;
 
             draw_rectangle(
                 active.col as f32 * CELL_SIZE,
@@ -115,6 +115,10 @@ impl Board {
                 CELL_SIZE,
                 color,
             );
+
+            if let Some(piece) = self.data[active.row][active.col] {
+                self.show_options(piece);
+            }
         }
     }
 }
