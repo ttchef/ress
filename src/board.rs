@@ -1,4 +1,4 @@
-use crate::piece::{Kind, Piece, Side};
+use crate::piece::{Kind, MoveVector, Piece, Side};
 use crate::renderer::Renderer;
 
 use macroquad::prelude::*;
@@ -12,13 +12,23 @@ const BLACK_SQUARE: Color = Color::from_hex(0x769557);
 
 #[derive(PartialEq)]
 pub struct Square {
-    row: usize,
-    col: usize,
+    pub row: usize,
+    pub col: usize,
 }
 
 impl Square {
     fn new(row: usize, col: usize) -> Self {
         Self { row, col }
+    }
+}
+
+impl std::ops::Add<MoveVector> for Square {
+    type Output = Square;
+    fn add(self, rhs: MoveVector) -> Self::Output {
+        Square {
+            row: self.row + rhs.row,
+            col: self.col + rhs.col,
+        }
     }
 }
 
@@ -68,7 +78,13 @@ impl Board {
         }
     }
 
-    fn show_options(&self, piece: Piece) {}
+    fn show_options(&self, piece: Piece) {
+        let moves = piece.get_move_vectors();
+
+        for move in moves {
+            
+        }
+    }
 
     pub fn draw(&self, renderer: &Renderer) {
         for row in 0..BOARD_SIZE {

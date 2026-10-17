@@ -1,9 +1,26 @@
 const UNIQUE_PIECES: usize = 6;
 
 pub struct MoveVector {
-    row: usize,
-    col: usize,
+    pub row: i32,
+    pub col: i32,
 }
+
+impl MoveVector {
+    const fn new(row: i32, col: i32) -> Self {
+        Self { row, col }
+    }
+}
+
+const KNIGHT_MOVE_VECTOR: [MoveVector; 8] = [
+    MoveVector::new(2, -1),
+    MoveVector::new(2, 1),
+    MoveVector::new(1, 2),
+    MoveVector::new(1, -2),
+    MoveVector::new(-2, -1),
+    MoveVector::new(-2, 1),
+    MoveVector::new(-1, 2),
+    MoveVector::new(-1, -2),
+];
 
 #[derive(Copy, Clone, Debug)]
 pub enum Side {
@@ -74,5 +91,9 @@ impl Piece {
         format!("assets/textures/pieces/{}{}.png", side, kind)
     }
 
-    pub fn get_move_vector(&self) -> &[]
+    pub fn get_move_vectors(&self) -> &[MoveVector] {
+        match self.kind {
+            _ => &KNIGHT_MOVE_VECTOR,
+        }
+    }
 }
