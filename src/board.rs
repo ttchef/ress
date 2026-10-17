@@ -10,7 +10,7 @@ pub const CELL_SIZE: f32 = 800.0 / BOARD_SIZE as f32;
 const WHITE_SQUARE: Color = Color::from_hex(0xeaedd1);
 const BLACK_SQUARE: Color = Color::from_hex(0x769557);
 
-#[derive(PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Square {
     pub row: usize,
     pub col: usize,
@@ -22,13 +22,20 @@ impl Square {
     }
 }
 
-impl std::ops::Add<MoveVector> for Square {
-    type Output = Square;
-    fn add(self, rhs: MoveVector) -> Self::Output {
-        Square {
-            row: self.row + rhs.row,
-            col: self.col + rhs.col,
+impl std::ops::Add<&MoveVector> for Square {
+    type Output = Option<Square>;
+    fn add(self, rhs: &MoveVector) -> Self::Output {
+        let row = self.row as i32 + rhs.row;
+        let col = self.col as i32 + rhs.col;
+
+        if row < 0 || col < 0 || row > (BOARD_SIZE - 1) as i32 || col > (BOARD_SIZE - 1) as i32 {
+            return None;
         }
+
+        Some(Square {
+            row: row as usize,
+            col: col as usize,
+        })
     }
 }
 
@@ -79,10 +86,25 @@ impl Board {
     }
 
     fn show_options(&self, piece: Piece) {
-        let moves = piece.get_move_vectors();
+        if !self.active.is_some() {
+            return;
+        }
 
-        for move in moves {
-            
+        let move_vectors = piece.get_move_vectors();
+
+        for vec in move_vectors {
+            if let Some(pos) = self.active.unwrap() + vec {
+                if self.data[pos.row][pos.col].is_some() {
+                    continue;
+                }
+
+                draw_circle(
+                    pos.col as f32 * CELL_SIZE + CELL_SIZE / 2.0,
+                    pos.row as f32 * CELL_SIZE + CELL_SIZE / 2.0,
+                    CELL_SIZE / 3.0,
+                    RED,
+                );
+            }
         }
     }
 
