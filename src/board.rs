@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+
 use crate::piece::{Kind, Piece, Side};
 use crate::renderer::Renderer;
 
@@ -10,10 +12,23 @@ pub const CELL_SIZE: f32 = 800.0 / BOARD_SIZE as f32;
 const WHITE_SQUARE: Color = Color::from_hex(0xeaedd1);
 const BLACK_SQUARE: Color = Color::from_hex(0x769557);
 
+#[derive(PartialEq)]
+pub struct Square {
+    row: usize,
+    col: usize,
+}
+
+impl Square {
+    fn new(row: usize, col: usize) -> Self {
+        Self { row, col }
+    }
+}
+
 // [0][0] is black back rank
 // [row][col] indexing
 pub struct Board {
     data: [[Option<Piece>; BOARD_SIZE]; BOARD_SIZE],
+    active: Option<Square>,
 }
 
 impl Board {
@@ -38,7 +53,21 @@ impl Board {
             data[6][col] = Some(Piece::new(Kind::Pawn, Side::White));
         }
 
-        Self { data }
+        Self { data, active: None }
+    }
+
+    pub fn clicked(&mut self, pos: (f32, f32)) {
+        let (col, row) = (
+            pos.0 as usize / CELL_SIZE as usize,
+            pos.1 as usize / CELL_SIZE as usize,
+        );
+
+        let new = Some(Square::new(row, col));
+        if self.active == new {
+            self.active = None;
+        } else {
+            self.active = new;
+        }
     }
 
     pub fn draw(&self, renderer: &Renderer) {
@@ -73,6 +102,19 @@ impl Board {
                     );
                 }
             }
+        }
+
+        if let Some(active) = &self.active {
+            let mut color = YELLOW;
+            color.a *= 0.5;
+
+            draw_rectangle(
+                active.col as f32 * CELL_SIZE,
+                active.row as f32 * CELL_SIZE,
+                CELL_SIZE,
+                CELL_SIZE,
+                color,
+            );
         }
     }
 }

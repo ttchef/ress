@@ -1,5 +1,4 @@
 const UNIQUE_PIECES: usize = 6;
-const UNIQUE_SIDES: usize = 2;
 
 #[derive(Copy, Clone, Debug)]
 pub enum Side {

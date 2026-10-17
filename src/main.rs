@@ -2,7 +2,7 @@ mod board;
 mod piece;
 mod renderer;
 
-use crate::board::Board;
+use crate::board::{Board, CELL_SIZE};
 use crate::renderer::Renderer;
 
 use macroquad::prelude::*;
@@ -22,11 +22,16 @@ fn window_conf() -> Conf {
 
 #[macroquad::main(window_conf)]
 async fn main() {
-    let mut renderer = Renderer::new().await;
+    let renderer = Renderer::new().await;
     let mut board = Board::standard();
 
     loop {
         clear_background(BLACK);
+
+        if is_mouse_button_pressed(MouseButton::Left) {
+            let mouse_pos = mouse_position();
+            board.clicked(mouse_pos);
+        }
 
         board.draw(&renderer);
 
