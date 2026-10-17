@@ -71,12 +71,37 @@ impl Board {
         Self { data, active: None }
     }
 
+    fn piece_on_active_square(&self) -> Option<Piece> {
+        if let Some(active) = self.active {
+            return self.data[active.row][active.col];
+        }
+        None
+    }
+
     pub fn clicked(&mut self, pos: (f32, f32)) {
         let (col, row) = (
             pos.0 as usize / CELL_SIZE as usize,
             pos.1 as usize / CELL_SIZE as usize,
         );
 
+        if let Some(piece) = self.piece_on_active_square() {
+            let move_vectors = piece.get_move_vectors();
+            for vec in move_vectors {
+                let active = self.active.unwrap();
+                if let Some(pos) = active + vec {
+                    if self.data[pos.row][pos.col].is_some() {
+                        continue;
+                    }
+
+                    if row == pos.row && col == pos.col {
+                        // Make a Move
+                        self.data[pos.row][pos.col] = self.data[active.row][active.col];
+                        self.data[active.row][active.col] = None;
+                        return;
+                    }
+                }
+            }
+        }
         let new = Some(Square::new(row, col));
         if self.active == new {
             self.active = None;

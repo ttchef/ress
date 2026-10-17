@@ -11,6 +11,13 @@ impl MoveVector {
     }
 }
 
+const ROOK_MOVE_VECTOR: [MoveVector; 4] = [
+    MoveVector::new(1, 0),
+    MoveVector::new(-1, 0),
+    MoveVector::new(0, 1),
+    MoveVector::new(0, -1),
+];
+
 const KNIGHT_MOVE_VECTOR: [MoveVector; 8] = [
     MoveVector::new(2, -1),
     MoveVector::new(2, 1),
@@ -21,6 +28,8 @@ const KNIGHT_MOVE_VECTOR: [MoveVector; 8] = [
     MoveVector::new(-1, 2),
     MoveVector::new(-1, -2),
 ];
+
+const PAWN_MOVE_VECTOR: [MoveVector; 2] = [MoveVector::new(1, 0), MoveVector::new(2, 0)];
 
 #[derive(Copy, Clone, Debug)]
 pub enum Side {
@@ -93,6 +102,8 @@ impl Piece {
 
     pub fn get_move_vectors(&self) -> &[MoveVector] {
         match self.kind {
+            Kind::Rook => &ROOK_MOVE_VECTOR,
+            Kind::Pawn => &PAWN_MOVE_VECTOR,
             _ => &KNIGHT_MOVE_VECTOR,
         }
     }
