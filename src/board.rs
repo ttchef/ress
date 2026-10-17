@@ -85,7 +85,7 @@ impl Board {
         );
 
         if let Some(piece) = self.piece_on_active_square() {
-            let move_vectors = piece.get_move_vectors();
+            let move_vectors = piece.get_move_vectors(self.active.unwrap(), self);
             for vec in move_vectors {
                 let active = self.active.unwrap();
                 if let Some(pos) = active + vec {
@@ -115,7 +115,7 @@ impl Board {
             return;
         }
 
-        let move_vectors = piece.get_move_vectors();
+        let move_vectors = piece.get_move_vectors(self.active.unwrap(), self);
 
         for vec in move_vectors {
             if let Some(pos) = self.active.unwrap() + vec {
