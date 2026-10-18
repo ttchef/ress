@@ -3,7 +3,7 @@ use crate::piece::{Kind, Piece, Side};
 
 pub const SIZE: usize = 8;
 
-#[derive(Copy, Clone, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Square {
     row: usize,
     col: usize,
@@ -15,6 +15,12 @@ impl Square {
             return Err(RessErr::CoordOutOfRange);
         }
         Ok(Self { row, col })
+    }
+
+    fn offset(self, drow: i32, dcol: i32) -> Option<Square> {
+        let row = usize::try_from(self.row as i32 + drow).ok()?;
+        let col = usize::try_from(self.col as i32 + dcol).ok()?;
+        Square::new(row, col).ok()
     }
 
     fn index(&self) -> usize {
@@ -241,6 +247,7 @@ impl Board {
             let moves = self.get_moves(active, piece);
             if moves & square.into() > 0.into() {
                 self.active = None;
+                self.unset(square);
                 self.set(square, piece);
                 self.unset(active);
                 self.turn = self.turn.other();
@@ -302,6 +309,23 @@ impl Board {
         piece
     }
 
+    fn move_from_vec(&self, pos: Square, side: Side, drow: i32, dcol: i32) -> Bitboard {
+        let mut possible = Bitboard(0);
+        let mut current = pos;
+
+        while let Some(next) = current.offset(drow, dcol) {
+            if let Some(other) = self.get(next) {
+                if other.side != side {
+                    possible.set(next);
+                }
+                break;
+            }
+            possible.set(next);
+            current = next;
+        }
+        possible
+    }
+
     pub fn get_moves(&self, square: Square, piece: Piece) -> Bitboard {
         let unit = Bitboard(1 << square.index());
         let team_mask = !self.team[piece.side as usize];
@@ -333,50 +357,12 @@ impl Board {
                 possible & team_mask
             }
             Kind::Rook => {
-                let (row, col) = unit.get_pos().unwrap();
-
                 let mut possible = Bitboard(0);
 
-                for row in (row + 1)..SIZE {
-                    let pos = Square::new(row, col).unwrap();
-                    if let Some(other) = self.get(pos) {
-                        if piece.side != other.side {
-                            possible.set(pos);
-                        }
-                        break;
-                    }
-                    possible.set(pos);
-                }
-                for row in (0..row).rev() {
-                    let pos = Square::new(row, col).unwrap();
-                    if let Some(other) = self.get(pos) {
-                        if piece.side != other.side {
-                            possible.set(pos);
-                        }
-                        break;
-                    }
-                    possible.set(pos);
-                }
-                for col in (col + 1)..SIZE {
-                    let pos = Square::new(row, col).unwrap();
-                    if let Some(other) = self.get(pos) {
-                        if piece.side != other.side {
-                            possible.set(pos);
-                        }
-                        break;
-                    }
-                    possible.set(pos);
-                }
-                for col in (0..col).rev() {
-                    let pos = Square::new(row, col).unwrap();
-                    if let Some(other) = self.get(pos) {
-                        if piece.side != other.side {
-                            possible.set(pos);
-                        }
-                        break;
-                    }
-                    possible.set(pos);
-                }
+                possible |= self.move_from_vec(square, piece.side, 1, 0)
+                    | self.move_from_vec(square, piece.side, -1, 0)
+                    | self.move_from_vec(square, piece.side, 0, 1)
+                    | self.move_from_vec(square, piece.side, 0, -1);
 
                 possible
             }
