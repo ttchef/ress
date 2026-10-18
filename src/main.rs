@@ -1,8 +1,9 @@
 mod board;
+mod error;
 mod piece;
 mod renderer;
 
-use crate::board::Board;
+use crate::board::{Board, Square};
 use crate::renderer::{Renderer, WINDOW_SIZE};
 
 use macroquad::prelude::*;
@@ -19,15 +20,19 @@ fn window_conf() -> Conf {
 }
 
 #[macroquad::main(window_conf)]
-async fn main() {
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let renderer = Renderer::new().await;
     let mut board = Board::standard();
 
     loop {
         clear_background(BLACK);
 
-        renderer.draw_board(&board);
+        if is_mouse_button_pressed(MouseButton::Left) {
+            let (row, col) = Renderer::pos_to_cell(mouse_position());
+            board.clicked(Square::new(row, col)?);
+        }
 
+        renderer.draw_board(&board)?;
         next_frame().await;
     }
 }

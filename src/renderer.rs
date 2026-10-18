@@ -1,4 +1,4 @@
-use crate::{board, board::Board, piece::Piece};
+use crate::{board, board::Board, board::Square, error::RessErr, piece::Piece};
 
 use macroquad::prelude::*;
 
@@ -28,7 +28,13 @@ impl Renderer {
         Self { piece_textures }
     }
 
-    pub fn draw_board(&self, board: &Board) {
+    pub fn pos_to_cell(pos: (f32, f32)) -> (usize, usize) {
+        let col = pos.0 / BOARD_CELL;
+        let row = pos.1 / BOARD_CELL;
+        (row as usize, col as usize)
+    }
+
+    pub fn draw_board(&self, board: &Board) -> Result<(), RessErr> {
         for row in 0..board::SIZE {
             for col in 0..board::SIZE {
                 draw_rectangle(
@@ -43,7 +49,7 @@ impl Renderer {
                     },
                 );
 
-                if let Some(piece) = board.get_square(row, col) {
+                if let Some(piece) = board.get(Square::new(row, col)?) {
                     let tex = &self.piece_textures[piece.index()];
                     draw_texture_ex(
                         tex,
@@ -58,5 +64,6 @@ impl Renderer {
                 }
             }
         }
+        Ok(())
     }
 }
