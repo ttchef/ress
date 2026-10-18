@@ -424,7 +424,102 @@ impl Board {
 
                 possible
             }
-            Kind::Queen => unit.offset(0, 0),
+            Kind::Queen => {
+                let (row, col) = unit.get_pos().unwrap();
+
+                let mut possible = Bitboard(0);
+
+                for row in (row + 1)..SIZE {
+                    let pos = Square::new(row, col).unwrap();
+                    if let Some(other) = self.get(pos) {
+                        if piece.side != other.side {
+                            possible.set(pos);
+                        }
+                        break;
+                    }
+                    possible.set(pos);
+                }
+                for row in (0..row).rev() {
+                    let pos = Square::new(row, col).unwrap();
+                    if let Some(other) = self.get(pos) {
+                        if piece.side != other.side {
+                            possible.set(pos);
+                        }
+                        break;
+                    }
+                    possible.set(pos);
+                }
+                for col in (col + 1)..SIZE {
+                    let pos = Square::new(row, col).unwrap();
+                    if let Some(other) = self.get(pos) {
+                        if piece.side != other.side {
+                            possible.set(pos);
+                        }
+                        break;
+                    }
+                    possible.set(pos);
+                }
+                for col in (0..col).rev() {
+                    let pos = Square::new(row, col).unwrap();
+                    if let Some(other) = self.get(pos) {
+                        if piece.side != other.side {
+                            possible.set(pos);
+                        }
+                        break;
+                    }
+                    possible.set(pos);
+                }
+
+                let br_dist = SIZE - row.max(col);
+                for i in 1..br_dist {
+                    let pos = Square::new(row + i, col + i).unwrap();
+                    if let Some(other) = self.get(pos) {
+                        if piece.side != other.side {
+                            possible.set(pos);
+                        }
+                        break;
+                    }
+                    possible.set(pos);
+                }
+
+                let tl_dist = row.min(col);
+                for i in 1..=tl_dist {
+                    let pos = Square::new(row - i, col - i).unwrap();
+                    if let Some(other) = self.get(pos) {
+                        if piece.side != other.side {
+                            possible.set(pos);
+                        }
+                        break;
+                    }
+                    possible.set(pos);
+                }
+
+                let tr_dist = row.min(SIZE - col);
+                for i in 1..tr_dist {
+                    let pos = Square::new(row - i, col + i).unwrap();
+                    if let Some(other) = self.get(pos) {
+                        if piece.side != other.side {
+                            possible.set(pos);
+                        }
+                        break;
+                    }
+                    possible.set(pos);
+                }
+
+                let bl_dist = col.min(SIZE - row);
+                for i in 1..bl_dist {
+                    let pos = Square::new(row + i, col - i).unwrap();
+                    if let Some(other) = self.get(pos) {
+                        if piece.side != other.side {
+                            possible.set(pos);
+                        }
+                        break;
+                    }
+                    possible.set(pos);
+                }
+
+                possible
+            }
             Kind::Knight => {
                 let possible = unit.offset(2, 1)
                     | unit.offset(2, -1)
