@@ -1,38 +1,6 @@
-use crate::board::{Board, Square};
+use crate::board::Board;
 
 const UNIQUE_PIECES: usize = 6;
-
-pub struct MoveVector {
-    pub row: i32,
-    pub col: i32,
-}
-
-impl MoveVector {
-    const fn new(row: i32, col: i32) -> Self {
-        Self { row, col }
-    }
-}
-
-const ROOK_MOVE_VECTOR: [MoveVector; 4] = [
-    MoveVector::new(1, 0),
-    MoveVector::new(-1, 0),
-    MoveVector::new(0, 1),
-    MoveVector::new(0, -1),
-];
-
-const KNIGHT_MOVE_VECTOR: [MoveVector; 8] = [
-    MoveVector::new(2, -1),
-    MoveVector::new(2, 1),
-    MoveVector::new(1, 2),
-    MoveVector::new(1, -2),
-    MoveVector::new(-2, -1),
-    MoveVector::new(-2, 1),
-    MoveVector::new(-1, 2),
-    MoveVector::new(-1, -2),
-];
-
-const PAWN_BLACK_MOVE_VECTOR: [MoveVector; 2] = [MoveVector::new(1, 0), MoveVector::new(2, 0)];
-const PAWN_WHITE_MOVE_VECTOR: [MoveVector; 2] = [MoveVector::new(-1, 0), MoveVector::new(-2, 0)];
 
 #[derive(Copy, Clone, Debug)]
 pub enum Side {
@@ -101,16 +69,5 @@ impl Piece {
             Kind::Pawn => "p",
         };
         format!("assets/textures/pieces/{}{}.png", side, kind)
-    }
-
-    pub fn get_move_vectors(&self, pos: Square, board: &Board) -> &[MoveVector] {
-        match self.kind {
-            Kind::Rook => &ROOK_MOVE_VECTOR,
-            Kind::Pawn => match self.side {
-                Side::White => &PAWN_WHITE_MOVE_VECTOR,
-                Side::Black => &PAWN_BLACK_MOVE_VECTOR,
-            },
-            _ => &KNIGHT_MOVE_VECTOR,
-        }
     }
 }
