@@ -40,9 +40,46 @@ impl Bitboard {
         self.0 &= !(1 << square.index());
     }
 
+    pub fn mask(f: impl Fn(usize, usize) -> bool) -> Bitboard {
+        let mut bitboard = Bitboard(0);
+
+        for row in 0..SIZE {
+            for col in 0..SIZE {
+                if f(row, col) {
+                    bitboard.set(Square::new(row, col).unwrap());
+                }
+            }
+        }
+        bitboard
+    }
+
+    pub fn get_col(&self) -> Option<usize> {
+        if self.0.count_ones() == 1 {
+            for col in 0..SIZE {
+                let mask = Bitboard::mask(|_, c| c == col);
+                if self.0 & mask.0 > 0 {
+                    return Some(col);
+                }
+            }
+        }
+        None
+    }
+
     // Not use of square because a offset coud take in smth like -1
     // whish a square is not capable of
-    pub fn offset(&self, row: i32, col: i32) -> Self {
+    fn offset(&self, row: i32, col: i32) -> Self {
+        if let Some(unit_col) = self.get_col() {
+            if col > 0 {
+                if unit_col as i32 + col >= SIZE as i32 {
+                    return Bitboard(0);
+                }
+            } else if col < 0 {
+                if unit_col as i32 + col < 0 as i32 {
+                    return Bitboard(0);
+                }
+            }
+        }
+
         if row < 0 {
             Bitboard(self.0 >> (-row * SIZE as i32 - col))
         } else {
