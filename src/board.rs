@@ -59,18 +59,6 @@ impl Bitboard {
         bitboard
     }
 
-    pub fn get_row(&self) -> Option<usize> {
-        if self.0.count_ones() == 1 {
-            for row in 0..SIZE {
-                let mask = Bitboard::mask(|r, _| r == row);
-                if self.0 & mask.0 > 0 {
-                    return Some(row);
-                }
-            }
-        }
-        None
-    }
-
     pub fn get_col(&self) -> Option<usize> {
         if self.0.count_ones() == 1 {
             for col in 0..SIZE {
@@ -79,15 +67,6 @@ impl Bitboard {
                     return Some(col);
                 }
             }
-        }
-        None
-    }
-
-    pub fn get_pos(&self) -> Option<(usize, usize)> {
-        if let Some(row) = self.get_row()
-            && let Some(col) = self.get_col()
-        {
-            return Some((row, col));
         }
         None
     }
@@ -357,165 +336,26 @@ impl Board {
                 possible & team_mask
             }
             Kind::Rook => {
-                let mut possible = Bitboard(0);
-
-                possible |= self.move_from_vec(square, piece.side, 1, 0)
+                self.move_from_vec(square, piece.side, 1, 0)
                     | self.move_from_vec(square, piece.side, -1, 0)
                     | self.move_from_vec(square, piece.side, 0, 1)
-                    | self.move_from_vec(square, piece.side, 0, -1);
-
-                possible
+                    | self.move_from_vec(square, piece.side, 0, -1)
             }
             Kind::Bishop => {
-                let (row, col) = unit.get_pos().unwrap();
-
-                let mut possible = Bitboard(0);
-
-                let br_dist = SIZE - row.max(col);
-                for i in 1..br_dist {
-                    let pos = Square::new(row + i, col + i).unwrap();
-                    if let Some(other) = self.get(pos) {
-                        if piece.side != other.side {
-                            possible.set(pos);
-                        }
-                        break;
-                    }
-                    possible.set(pos);
-                }
-
-                let tl_dist = row.min(col);
-                for i in 1..=tl_dist {
-                    let pos = Square::new(row - i, col - i).unwrap();
-                    if let Some(other) = self.get(pos) {
-                        if piece.side != other.side {
-                            possible.set(pos);
-                        }
-                        break;
-                    }
-                    possible.set(pos);
-                }
-
-                let tr_dist = row.min(SIZE - col);
-                for i in 1..tr_dist {
-                    let pos = Square::new(row - i, col + i).unwrap();
-                    if let Some(other) = self.get(pos) {
-                        if piece.side != other.side {
-                            possible.set(pos);
-                        }
-                        break;
-                    }
-                    possible.set(pos);
-                }
-
-                let bl_dist = col.min(SIZE - row);
-                for i in 1..bl_dist {
-                    let pos = Square::new(row + i, col - i).unwrap();
-                    if let Some(other) = self.get(pos) {
-                        if piece.side != other.side {
-                            possible.set(pos);
-                        }
-                        break;
-                    }
-                    possible.set(pos);
-                }
-
-                possible
+                self.move_from_vec(square, piece.side, 1, 1)
+                    | self.move_from_vec(square, piece.side, -1, -1)
+                    | self.move_from_vec(square, piece.side, -1, 1)
+                    | self.move_from_vec(square, piece.side, 1, -1)
             }
             Kind::Queen => {
-                let (row, col) = unit.get_pos().unwrap();
-
-                let mut possible = Bitboard(0);
-
-                for row in (row + 1)..SIZE {
-                    let pos = Square::new(row, col).unwrap();
-                    if let Some(other) = self.get(pos) {
-                        if piece.side != other.side {
-                            possible.set(pos);
-                        }
-                        break;
-                    }
-                    possible.set(pos);
-                }
-                for row in (0..row).rev() {
-                    let pos = Square::new(row, col).unwrap();
-                    if let Some(other) = self.get(pos) {
-                        if piece.side != other.side {
-                            possible.set(pos);
-                        }
-                        break;
-                    }
-                    possible.set(pos);
-                }
-                for col in (col + 1)..SIZE {
-                    let pos = Square::new(row, col).unwrap();
-                    if let Some(other) = self.get(pos) {
-                        if piece.side != other.side {
-                            possible.set(pos);
-                        }
-                        break;
-                    }
-                    possible.set(pos);
-                }
-                for col in (0..col).rev() {
-                    let pos = Square::new(row, col).unwrap();
-                    if let Some(other) = self.get(pos) {
-                        if piece.side != other.side {
-                            possible.set(pos);
-                        }
-                        break;
-                    }
-                    possible.set(pos);
-                }
-
-                let br_dist = SIZE - row.max(col);
-                for i in 1..br_dist {
-                    let pos = Square::new(row + i, col + i).unwrap();
-                    if let Some(other) = self.get(pos) {
-                        if piece.side != other.side {
-                            possible.set(pos);
-                        }
-                        break;
-                    }
-                    possible.set(pos);
-                }
-
-                let tl_dist = row.min(col);
-                for i in 1..=tl_dist {
-                    let pos = Square::new(row - i, col - i).unwrap();
-                    if let Some(other) = self.get(pos) {
-                        if piece.side != other.side {
-                            possible.set(pos);
-                        }
-                        break;
-                    }
-                    possible.set(pos);
-                }
-
-                let tr_dist = row.min(SIZE - col);
-                for i in 1..tr_dist {
-                    let pos = Square::new(row - i, col + i).unwrap();
-                    if let Some(other) = self.get(pos) {
-                        if piece.side != other.side {
-                            possible.set(pos);
-                        }
-                        break;
-                    }
-                    possible.set(pos);
-                }
-
-                let bl_dist = col.min(SIZE - row);
-                for i in 1..bl_dist {
-                    let pos = Square::new(row + i, col - i).unwrap();
-                    if let Some(other) = self.get(pos) {
-                        if piece.side != other.side {
-                            possible.set(pos);
-                        }
-                        break;
-                    }
-                    possible.set(pos);
-                }
-
-                possible
+                self.move_from_vec(square, piece.side, 1, 0)
+                    | self.move_from_vec(square, piece.side, -1, 0)
+                    | self.move_from_vec(square, piece.side, 0, 1)
+                    | self.move_from_vec(square, piece.side, 0, -1)
+                    | self.move_from_vec(square, piece.side, 1, 1)
+                    | self.move_from_vec(square, piece.side, -1, -1)
+                    | self.move_from_vec(square, piece.side, -1, 1)
+                    | self.move_from_vec(square, piece.side, 1, -1)
             }
             Kind::Knight => {
                 let possible = unit.offset(2, 1)
