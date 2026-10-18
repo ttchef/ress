@@ -49,6 +49,18 @@ impl Renderer {
                     },
                 );
 
+                if Some(Square::new(row, col)?) == board.active_square() {
+                    let mut color = GREEN;
+                    color.a *= 0.3;
+                    draw_rectangle(
+                        col as f32 * BOARD_CELL,
+                        row as f32 * BOARD_CELL,
+                        BOARD_CELL,
+                        BOARD_CELL,
+                        color,
+                    );
+                }
+
                 if let Some(piece) = board.get(Square::new(row, col)?) {
                     let tex = &self.piece_textures[piece.index()];
                     draw_texture_ex(

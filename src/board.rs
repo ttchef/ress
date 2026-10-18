@@ -3,7 +3,7 @@ use crate::piece::{Kind, Piece, Side};
 
 pub const SIZE: usize = 8;
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq)]
 pub struct Square {
     row: usize,
     col: usize,
@@ -93,7 +93,22 @@ impl Board {
         self.pieces[piece.kind as usize].set(square);
     }
 
-    pub fn clicked(&mut self, square: Square) {}
+    pub fn clicked(&mut self, square: Square) {
+        if let Some(active) = self.active {
+            if let Some(piece) = self.get(active) {
+            } else if active == square {
+                self.active = None;
+            } else {
+                self.active = Some(square);
+            }
+        } else {
+            self.active = Some(square);
+        }
+    }
+
+    pub fn active_square(&self) -> Option<Square> {
+        self.active
+    }
 
     pub fn get(&self, square: Square) -> Option<Piece> {
         let mut team_index = None;
