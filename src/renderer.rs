@@ -1,4 +1,6 @@
-use crate::{board, board::Board, board::Square, error::RessErr, piece::Piece};
+use crate::{
+    board, board::Board, board::Square, error::RessErr, piece::Kind, piece::Piece, piece::Side,
+};
 
 use macroquad::prelude::*;
 
@@ -13,11 +15,27 @@ pub struct Renderer {
 }
 
 impl Renderer {
+    fn asset_path(piece: Piece) -> String {
+        let side = match piece.side {
+            Side::White => "w",
+            Side::Black => "b",
+        };
+        let kind = match piece.kind {
+            Kind::King => "k",
+            Kind::Queen => "q",
+            Kind::Rook => "r",
+            Kind::Bishop => "b",
+            Kind::Knight => "n",
+            Kind::Pawn => "p",
+        };
+        format!("assets/textures/pieces/{}{}.png", side, kind)
+    }
+
     pub async fn new() -> Self {
         let mut piece_textures = Vec::new();
 
         for i in 0..12 {
-            let path = Piece::from_index(i).asset_path();
+            let path = Renderer::asset_path(Piece::from_index(i));
             piece_textures.push(
                 load_texture(path.as_str())
                     .await

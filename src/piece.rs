@@ -61,20 +61,4 @@ impl Piece {
         };
         Piece::new(kind, side)
     }
-
-    pub fn asset_path(&self) -> String {
-        let side = match self.side {
-            Side::White => "w",
-            Side::Black => "b",
-        };
-        let kind = match self.kind {
-            Kind::King => "k",
-            Kind::Queen => "q",
-            Kind::Rook => "r",
-            Kind::Bishop => "b",
-            Kind::Knight => "n",
-            Kind::Pawn => "p",
-        };
-        format!("assets/textures/pieces/{}{}.png", side, kind)
-    }
 }

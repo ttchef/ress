@@ -89,7 +89,7 @@ impl Bitboard {
                     return Bitboard(0);
                 }
             } else if col < 0 {
-                if unit_col as i32 + col <= 0 as i32 {
+                if unit_col as i32 + col < 0 as i32 {
                     return Bitboard(0);
                 }
             }
@@ -256,10 +256,7 @@ impl Board {
                 break;
             }
         }
-        let Some(team_index) = team_index else {
-            return None;
-        };
-        let team = match team_index {
+        let team = match team_index? {
             0 => Side::White,
             1 => Side::Black,
             other => panic!("Invalid team index: {other}"),
