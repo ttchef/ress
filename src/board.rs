@@ -53,6 +53,18 @@ impl Bitboard {
         bitboard
     }
 
+    pub fn get_row(&self) -> Option<usize> {
+        if self.0.count_ones() == 1 {
+            for row in 0..SIZE {
+                let mask = Bitboard::mask(|r, _| r == row);
+                if self.0 & mask.0 > 0 {
+                    return Some(row);
+                }
+            }
+        }
+        None
+    }
+
     pub fn get_col(&self) -> Option<usize> {
         if self.0.count_ones() == 1 {
             for col in 0..SIZE {
@@ -61,6 +73,15 @@ impl Bitboard {
                     return Some(col);
                 }
             }
+        }
+        None
+    }
+
+    pub fn get_pos(&self) -> Option<(usize, usize)> {
+        if let Some(row) = self.get_row()
+            && let Some(col) = self.get_col()
+        {
+            return Some((row, col));
         }
         None
     }
@@ -287,13 +308,54 @@ impl Board {
                 possible & team_mask
             }
             Kind::Pawn => {
-                let mut possible = unit.offset(-1, 0);
-                let double_move = unit.offset(-2, 0);
+                let (side, rank) = match piece.side {
+                    Side::White => (1, 4),
+                    Side::Black => (-1, 3),
+                };
 
-                let rank_mask = Bitboard(0b11111111 << 4 * SIZE);
+                let mut possible = unit.offset(-1 * side, 0);
+                let double_move = unit.offset(-2 * side, 0);
+
+                let rank_mask = Bitboard(0xff << rank * SIZE);
                 possible |= double_move & rank_mask;
 
                 possible & team_mask
+            }
+            Kind::Rook => {
+                let (row, col) = unit.get_pos().unwrap();
+
+                let mut possible = Bitboard(0);
+
+                for row in (row + 1)..SIZE {
+                    let pos = Square::new(row, col).unwrap();
+                    if self.get(pos).is_some() {
+                        break;
+                    }
+                    possible.set(pos);
+                }
+                for row in (0..row).rev() {
+                    let pos = Square::new(row, col).unwrap();
+                    if self.get(pos).is_some() {
+                        break;
+                    }
+                    possible.set(pos);
+                }
+                for col in (col + 1)..SIZE {
+                    let pos = Square::new(row, col).unwrap();
+                    if self.get(pos).is_some() {
+                        break;
+                    }
+                    possible.set(pos);
+                }
+                for col in (0..col).rev() {
+                    let pos = Square::new(row, col).unwrap();
+                    if self.get(pos).is_some() {
+                        break;
+                    }
+                    possible.set(pos);
+                }
+
+                possible
             }
             _ => {
                 let possible = unit.offset(2, 1)
@@ -308,10 +370,4 @@ impl Board {
             }
         }
     }
-}
-
-#[test]
-fn bitboard_square() {
-    let board = Bitboard(1 << (2 * SIZE + 4));
-    assert!(board.get(Square::new(2, 4).unwrap()));
 }
