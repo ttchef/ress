@@ -164,6 +164,7 @@ pub struct Board {
     pieces: [Bitboard; 6],
     team: [Bitboard; 2],
     active: Option<Square>,
+    turn: Side,
 }
 
 impl Board {
@@ -172,6 +173,7 @@ impl Board {
             pieces: [Bitboard(0); 6],
             team: [Bitboard(0); 2],
             active: None,
+            turn: Side::White,
         }
     }
 
@@ -224,15 +226,24 @@ impl Board {
         }
     }
 
-    pub fn clicked(&mut self, square: Square) {
+    pub fn can_move(&self) -> Option<(Square, Piece)> {
         if let Some(active) = self.active
             && let Some(piece) = self.get(active)
+            && self.team[self.turn as usize] & active.into() > 0.into()
         {
+            return Some((active, piece));
+        }
+        None
+    }
+
+    pub fn clicked(&mut self, square: Square) {
+        if let Some((active, piece)) = self.can_move() {
             let moves = self.get_moves(active, piece);
             if moves & square.into() > 0.into() {
                 self.active = None;
                 self.set(square, piece);
                 self.unset(active);
+                self.turn = self.turn.other();
 
                 return;
             }

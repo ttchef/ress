@@ -77,19 +77,18 @@ impl Renderer {
             }
         }
 
-        if let Some(active) = board.active_square()
-            && let Some(piece) = board.get(active)
-        {
+        if let Some((active, piece)) = board.can_move() {
             let moves = board.get_moves(active, piece);
             // TODO: Optimize later
             for row in 0..board::SIZE {
                 for col in 0..board::SIZE {
+                    let color = Color::new(0.0, 0.0, 0.0, 0.2);
                     if moves.get(Square::new(row, col)?) {
                         draw_circle(
                             col as f32 * BOARD_CELL + BOARD_CELL / 2.0,
                             row as f32 * BOARD_CELL + BOARD_CELL / 2.0,
-                            BOARD_CELL / 3.0,
-                            RED,
+                            BOARD_CELL / 4.0,
+                            color,
                         );
                     }
                 }
