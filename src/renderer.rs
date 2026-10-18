@@ -42,6 +42,20 @@ impl Renderer {
                         BLACK_COLOR
                     },
                 );
+
+                if let Some(piece) = board.get_square(row, col) {
+                    let tex = &self.piece_textures[piece.index()];
+                    draw_texture_ex(
+                        tex,
+                        col as f32 * BOARD_CELL,
+                        row as f32 * BOARD_CELL,
+                        WHITE,
+                        DrawTextureParams {
+                            dest_size: Some(Vec2::new(BOARD_CELL, BOARD_CELL)),
+                            ..Default::default()
+                        },
+                    );
+                }
             }
         }
     }
