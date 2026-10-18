@@ -1,5 +1,3 @@
-use crate::board::Board;
-
 const UNIQUE_PIECES: usize = 6;
 
 #[derive(Copy, Clone, Debug)]

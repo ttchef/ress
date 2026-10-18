@@ -27,12 +27,47 @@ pub struct Bitboard(u64);
 
 impl Bitboard {
     pub fn set(&mut self, square: Square) {
-        self.0 |= 1 << square.index()
+        self.0 |= 1 << square.index();
+    }
+
+    pub fn unset(&mut self, square: Square) {
+        self.0 &= !(1 << square.index());
+    }
+
+    // Not use of square because a offset coud take in smth like -1
+    // whish a square is not capable of
+    pub fn offset(&self, row: i32, col: i32) -> Self {
+        if row < 0 {
+            Bitboard(self.0 >> (-row * SIZE as i32 - col))
+        } else {
+            Bitboard(self.0 << (row * SIZE as i32 + col))
+        }
     }
 
     // Returns true if bit on this square is set
     pub fn get(&self, square: Square) -> bool {
         self.0 & (1 << square.index()) != 0
+    }
+}
+
+impl std::ops::Shl<usize> for Bitboard {
+    type Output = Self;
+
+    fn shl(self, rhs: usize) -> Self::Output {
+        Bitboard(self.0 << rhs)
+    }
+}
+
+impl std::ops::BitOrAssign for Bitboard {
+    fn bitor_assign(&mut self, rhs: Self) {
+        self.0 |= rhs.0;
+    }
+}
+
+impl std::ops::BitOr for Bitboard {
+    type Output = Self;
+    fn bitor(self, rhs: Self) -> Self::Output {
+        Bitboard(self.0 | rhs.0)
     }
 }
 
@@ -94,13 +129,10 @@ impl Board {
     }
 
     pub fn clicked(&mut self, square: Square) {
-        if let Some(active) = self.active {
-            if let Some(piece) = self.get(active) {
-            } else if active == square {
-                self.active = None;
-            } else {
-                self.active = Some(square);
-            }
+        if let Some(active) = self.active
+            && active == square
+        {
+            self.active = None;
         } else {
             self.active = Some(square);
         }
@@ -148,6 +180,16 @@ impl Board {
             }
         }
         piece
+    }
+
+    pub fn get_moves(&self, square: Square, piece: Piece) -> Bitboard {
+        match piece.kind {
+            _ => {
+                let unit = Bitboard(1 << square.index());
+
+                unit.offset(2, 1) | unit.offset(2, -1) | unit.offset(-2, 1) | unit.offset(-2, -1)
+            }
+        }
     }
 }
 
