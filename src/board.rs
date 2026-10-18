@@ -65,6 +65,15 @@ impl Bitboard {
         None
     }
 
+    fn shift(&self, amount: i32) -> Self {
+        match amount.signum() {
+            -1 => Bitboard(self.0 >> amount.abs()),
+            1 => Bitboard(self.0 << amount),
+            0 => Bitboard(self.0),
+            _ => panic!("What the hell happend that we got here???"),
+        }
+    }
+
     // Not use of square because a offset coud take in smth like -1
     // whish a square is not capable of
     fn offset(&self, row: i32, col: i32) -> Self {
@@ -74,17 +83,12 @@ impl Bitboard {
                     return Bitboard(0);
                 }
             } else if col < 0 {
-                if unit_col as i32 + col < 0 as i32 {
+                if unit_col as i32 + col <= 0 as i32 {
                     return Bitboard(0);
                 }
             }
         }
-
-        if row < 0 {
-            Bitboard(self.0 >> (-row * SIZE as i32 - col))
-        } else {
-            Bitboard(self.0 << (row * SIZE as i32 + col))
-        }
+        self.shift(row * SIZE as i32 + col)
     }
 
     // Returns true if bit on this square is set
@@ -118,6 +122,13 @@ impl std::ops::BitAnd for Bitboard {
     type Output = Self;
     fn bitand(self, rhs: Self) -> Self::Output {
         Bitboard(self.0 & rhs.0)
+    }
+}
+
+impl std::ops::Not for Bitboard {
+    type Output = Self;
+    fn not(self) -> Self::Output {
+        Bitboard(!self.0)
     }
 }
 
@@ -186,7 +197,8 @@ impl Board {
 
     fn unset(&mut self, square: Square) {
         if let Some(piece) = self.get(square) {
-            self.team[piece.side as usize].unset(square);
+            self.team[Side::White as usize].unset(square);
+            self.team[Side::Black as usize].unset(square);
             self.pieces[piece.kind as usize].unset(square);
         }
     }
@@ -259,18 +271,40 @@ impl Board {
     }
 
     pub fn get_moves(&self, square: Square, piece: Piece) -> Bitboard {
-        match piece.kind {
-            _ => {
-                let unit = Bitboard(1 << square.index());
+        let unit = Bitboard(1 << square.index());
+        let team_mask = !self.team[piece.side as usize];
 
-                unit.offset(2, 1)
+        match piece.kind {
+            Kind::King => {
+                let possible = unit.offset(1, 0)
+                    | unit.offset(-1, 0)
+                    | unit.offset(0, 1)
+                    | unit.offset(0, -1)
+                    | unit.offset(1, 1)
+                    | unit.offset(1, -1)
+                    | unit.offset(-1, 1)
+                    | unit.offset(-1, -1);
+                possible & team_mask
+            }
+            Kind::Pawn => {
+                let mut possible = unit.offset(-1, 0);
+                let double_move = unit.offset(-2, 0);
+
+                let rank_mask = Bitboard(0b11111111 << 4 * SIZE);
+                possible |= double_move & rank_mask;
+
+                possible & team_mask
+            }
+            _ => {
+                let possible = unit.offset(2, 1)
                     | unit.offset(2, -1)
                     | unit.offset(-2, 1)
                     | unit.offset(-2, -1)
                     | unit.offset(1, 2)
                     | unit.offset(1, -2)
                     | unit.offset(-1, 2)
-                    | unit.offset(-1, -2)
+                    | unit.offset(-1, -2);
+                possible & team_mask
             }
         }
     }

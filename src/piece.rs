@@ -6,6 +6,15 @@ pub enum Side {
     Black,
 }
 
+impl Side {
+    pub const fn other(&self) -> Self {
+        match self {
+            Side::White => Side::Black,
+            Side::Black => Side::White,
+        }
+    }
+}
+
 #[derive(Copy, Clone, Debug)]
 pub enum Kind {
     King,
