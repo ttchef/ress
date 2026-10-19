@@ -330,6 +330,9 @@ impl Board {
                 let rank_mask = Bitboard(0xff << rank * SIZE);
                 possible |= double_move & rank_mask;
 
+                let take = unit.offset(-1 * side, -1) | unit.offset(-1 * side, 1);
+                possible |= take & self.team[piece.side.other() as usize];
+
                 possible & team_mask
             }
             Kind::Rook => {
