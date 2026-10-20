@@ -44,9 +44,27 @@ async fn textures_init() -> Vec<Texture2D> {
 #[macroquad::main(window_conf)]
 async fn main() {
     let textures = textures_init().await;
+    let mut active = None;
+
     let engine = ress::Engine::new();
 
     loop {
+        // let dt = get_frame_time() * 1000.0;
+        // println!("DT: {dt}");
+
+        if is_mouse_button_pressed(MouseButton::Left) {
+            let mouse_pos = mouse_position();
+            let file = mouse_pos.0 / GRID_SIZE as f32;
+            let rank = mouse_pos.1 / GRID_SIZE as f32;
+            if let Some(a) = active
+                && a == ress::Square::new(rank as u8, file as u8)
+            {
+                active = None;
+            } else {
+                active = Some(ress::Square::new(rank as u8, file as u8));
+            }
+        }
+
         clear_background(BLACK);
 
         for rank in 0..GRID_COUNT {
@@ -65,6 +83,12 @@ async fn main() {
                         DARK_SQUARE_COLOR
                     },
                 );
+
+                if let Some(active) = active
+                    && ress::Square::new(rank as u8, file as u8) == active
+                {
+                    draw_rectangle(x, y, GRID_SIZE, GRID_SIZE, GREEN.with_alpha(0.5));
+                }
 
                 if let Some((piece, side)) =
                     engine.board.get(ress::Square::new(rank as u8, file as u8))

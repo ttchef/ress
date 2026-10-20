@@ -72,9 +72,22 @@ impl Board {
             sides: [Bitboard::empty(); 2],
         };
 
+        const BACK_RANK: [Piece; 8] = [
+            Piece::Rook,
+            Piece::Knight,
+            Piece::Bishop,
+            Piece::Queen,
+            Piece::Knight,
+            Piece::Bishop,
+            Piece::Knight,
+            Piece::Rook,
+        ];
+
         for file in 0..SIZE {
+            board.set(Square::new(0, file), BACK_RANK[file as usize], Side::Black);
             board.set(Square::new(1, file), Piece::Pawn, Side::Black);
             board.set(Square::new(6, file), Piece::Pawn, Side::White);
+            board.set(Square::new(7, file), BACK_RANK[file as usize], Side::White);
         }
 
         board
@@ -92,5 +105,19 @@ impl Board {
         let side = Side::ALL.iter().find(|&&s| self[s].contains(mask))?;
 
         Some((*piece, *side))
+    }
+
+    pub fn get_moves(&self, piece: Piece, side: Side, square: Option<Square>) -> Bitboard {
+        let square_mask = match square {
+            Some(sq) => sq.into(),
+            None => Bitboard::full(),
+        };
+
+        let piece_board = self[piece];
+        let side_board = self[side];
+
+        match piece {
+            _ => piece_board << 8,
+        }
     }
 }

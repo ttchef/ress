@@ -1,16 +1,20 @@
 use crate::coordinates::*;
 
-use std::ops::{BitAnd, BitOrAssign};
+use std::ops::{BitAnd, BitOrAssign, Shl};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Bitboard(u64);
 
 impl Bitboard {
-    pub fn empty() -> Self {
+    pub const fn empty() -> Self {
         Bitboard(0)
     }
 
-    pub fn is_empty(&self) -> bool {
+    pub const fn full() -> Self {
+        Bitboard(!0)
+    }
+
+    pub const fn is_empty(&self) -> bool {
         self.0 == 0
     }
 
@@ -33,6 +37,13 @@ impl BitAnd for Bitboard {
 impl BitOrAssign for Bitboard {
     fn bitor_assign(&mut self, rhs: Self) {
         self.0 |= rhs.0;
+    }
+}
+
+impl Shl<u8> for Bitboard {
+    type Output = Self;
+    fn shl(self, rhs: u8) -> Self::Output {
+        Bitboard(self.0 << rhs)
     }
 }
 
