@@ -19,8 +19,6 @@ pub enum Compass {
     NorthWest = 7,
 }
 
-// TODO: Maybe a square like enum with a1 a2 a3 etc...
-
 impl Square {
     pub const fn new(rank: u8, file: u8) -> Self {
         assert!(rank < SIZE);

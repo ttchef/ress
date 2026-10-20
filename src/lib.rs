@@ -5,7 +5,7 @@ mod coordinates;
 use crate::board::*;
 
 pub struct Engine {
-    board: Board,
+    pub board: Board,
 }
 
 impl Engine {

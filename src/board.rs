@@ -65,8 +65,18 @@ impl Board {
         board
     }
 
-    fn set(&mut self, square: Square, piece: Piece, side: Side) {
+    pub fn set(&mut self, square: Square, piece: Piece, side: Side) {
         self[piece].set(square);
         self[side].set(square);
+    }
+
+    pub fn get(&self, square: Square) -> (Piece, Side) {
+        let mask: Bitboard = square.into();
+
+        // for kind in self.pieces {
+        // if !(kind & mask).is_empty() {}
+        // }
+
+        (Piece::Pawn, Side::White)
     }
 }
