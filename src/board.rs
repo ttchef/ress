@@ -31,7 +31,7 @@ impl Piece {
         Piece::Bishop,
         Piece::Rook,
         Piece::Queen,
-        Piece::Knight,
+        Piece::King,
     ];
 }
 
@@ -77,17 +77,17 @@ impl Board {
             Piece::Knight,
             Piece::Bishop,
             Piece::Queen,
-            Piece::Knight,
+            Piece::King,
             Piece::Bishop,
             Piece::Knight,
             Piece::Rook,
         ];
 
         for file in 0..SIZE {
-            board.set(Square::new(0, file), BACK_RANK[file as usize], Side::Black);
-            board.set(Square::new(1, file), Piece::Pawn, Side::Black);
-            board.set(Square::new(6, file), Piece::Pawn, Side::White);
-            board.set(Square::new(7, file), BACK_RANK[file as usize], Side::White);
+            board.set(Square::new(0, file), BACK_RANK[file as usize], Side::White);
+            board.set(Square::new(1, file), Piece::Pawn, Side::White);
+            board.set(Square::new(6, file), Piece::Pawn, Side::Black);
+            board.set(Square::new(7, file), BACK_RANK[file as usize], Side::Black);
         }
 
         board
@@ -107,7 +107,13 @@ impl Board {
         Some((*piece, *side))
     }
 
-    pub fn get_moves(&self, piece: Piece, side: Side, square: Option<Square>) -> Bitboard {
+    pub fn get_pseudo_legal_moves(
+        &self,
+        piece: Piece,
+        side: Side,
+        square: Option<Square>,
+        to_move: Side,
+    ) -> Bitboard {
         let square_mask = match square {
             Some(sq) => sq.into(),
             None => Bitboard::full(),
@@ -116,8 +122,18 @@ impl Board {
         let piece_board = self[piece];
         let side_board = self[side];
 
-        match piece {
-            _ => piece_board << 8,
-        }
+        let units = piece_board & side_board & square_mask;
+        let to_move = to_move as u8;
+
+        let moves = match piece {
+            Piece::Pawn => {
+                let one_up = (units << 8) >> 16 * to_move;
+                let double_up = (units << 16) >> 32 * to_move;
+                one_up | (double_up & Bitboard(0xff << 4))
+            }
+            _ => units,
+        };
+
+        moves & !side_board
     }
 }

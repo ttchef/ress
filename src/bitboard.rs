@@ -1,9 +1,9 @@
 use crate::coordinates::*;
 
-use std::ops::{BitAnd, BitOrAssign, Shl};
+use std::ops::{BitAnd, BitOr, BitOrAssign, Not, Shl, Shr};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub struct Bitboard(u64);
+pub struct Bitboard(pub u64);
 
 impl Bitboard {
     pub const fn empty() -> Self {
@@ -34,9 +34,23 @@ impl BitAnd for Bitboard {
     }
 }
 
+impl BitOr for Bitboard {
+    type Output = Self;
+    fn bitor(self, rhs: Self) -> Self::Output {
+        Bitboard(self.0 | rhs.0)
+    }
+}
+
 impl BitOrAssign for Bitboard {
     fn bitor_assign(&mut self, rhs: Self) {
         self.0 |= rhs.0;
+    }
+}
+
+impl Not for Bitboard {
+    type Output = Self;
+    fn not(self) -> Self::Output {
+        Bitboard(!self.0)
     }
 }
 
@@ -44,6 +58,13 @@ impl Shl<u8> for Bitboard {
     type Output = Self;
     fn shl(self, rhs: u8) -> Self::Output {
         Bitboard(self.0 << rhs)
+    }
+}
+
+impl Shr<u8> for Bitboard {
+    type Output = Self;
+    fn shr(self, rhs: u8) -> Self::Output {
+        Bitboard(self.0 >> rhs)
     }
 }
 

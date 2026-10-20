@@ -1,8 +1,7 @@
 use macroquad::prelude::*;
 
 const WINDOW_SIZE: f32 = 800.0;
-const GRID_COUNT: usize = 8;
-const GRID_SIZE: f32 = WINDOW_SIZE / GRID_COUNT as f32;
+const GRID_SIZE: f32 = WINDOW_SIZE / ress::SIZE as f32;
 
 const LIGHT_SQUARE_COLOR: Color = Color::from_hex(0xeaedd1);
 const DARK_SQUARE_COLOR: Color = Color::from_hex(0x769557);
@@ -13,6 +12,7 @@ fn window_conf() -> Conf {
         window_width: WINDOW_SIZE as i32,
         window_height: WINDOW_SIZE as i32,
         window_resizable: false,
+        sample_count: 4,
         ..Default::default()
     }
 }
@@ -41,10 +41,37 @@ async fn textures_init() -> Vec<Texture2D> {
     textures
 }
 
+fn square_to_screen(rank: u8, file: u8, flipped: bool) -> (f32, f32) {
+    let (file, rank) = if flipped {
+        (ress::SIZE - 1 - file, rank)
+    } else {
+        (file, ress::SIZE - 1 - rank)
+    };
+    (file as f32 * GRID_SIZE, rank as f32 * GRID_SIZE)
+}
+
+fn screen_to_square(x: f32, y: f32, flipped: bool) -> Option<ress::Square> {
+    if x < 0.0 || y < 0.0 {
+        return None;
+    }
+    let file = (x / GRID_SIZE) as u8;
+    let rank = (y / GRID_SIZE) as u8;
+    if file >= ress::SIZE || rank >= ress::SIZE {
+        return None;
+    }
+    let (rank, file) = if flipped {
+        (rank, ress::SIZE - 1 - file)
+    } else {
+        (ress::SIZE - 1 - rank, file)
+    };
+    Some(ress::Square::new(rank, file))
+}
+
 #[macroquad::main(window_conf)]
 async fn main() {
     let textures = textures_init().await;
     let mut active = None;
+    let mut flipped = true;
 
     let engine = ress::Engine::new();
 
@@ -52,32 +79,29 @@ async fn main() {
         // let dt = get_frame_time() * 1000.0;
         // println!("DT: {dt}");
 
+        if is_key_pressed(KeyCode::F) {
+            flipped = !flipped;
+        }
+
         if is_mouse_button_pressed(MouseButton::Left) {
             let mouse_pos = mouse_position();
-            let file = mouse_pos.0 / GRID_SIZE as f32;
-            let rank = mouse_pos.1 / GRID_SIZE as f32;
-            if let Some(a) = active
-                && a == ress::Square::new(rank as u8, file as u8)
-            {
-                active = None;
-            } else {
-                active = Some(ress::Square::new(rank as u8, file as u8));
+            if let Some(sq) = screen_to_square(mouse_pos.0, mouse_pos.1, flipped) {
+                active = if active == Some(sq) { None } else { Some(sq) }
             }
         }
 
         clear_background(BLACK);
 
-        for rank in 0..GRID_COUNT {
-            for file in 0..GRID_COUNT {
-                let x = file as f32 * GRID_SIZE;
-                let y = rank as f32 * GRID_SIZE;
+        for rank in 0..ress::SIZE {
+            for file in 0..ress::SIZE {
+                let (x, y) = square_to_screen(rank, file, flipped);
 
                 draw_rectangle(
                     x,
                     y,
                     GRID_SIZE,
                     GRID_SIZE,
-                    if (rank + file) % 2 == 0 {
+                    if (rank + file) % 2 == 1 {
                         LIGHT_SQUARE_COLOR
                     } else {
                         DARK_SQUARE_COLOR
@@ -85,14 +109,12 @@ async fn main() {
                 );
 
                 if let Some(active) = active
-                    && ress::Square::new(rank as u8, file as u8) == active
+                    && ress::Square::new(rank, file) == active
                 {
                     draw_rectangle(x, y, GRID_SIZE, GRID_SIZE, GREEN.with_alpha(0.5));
                 }
 
-                if let Some((piece, side)) =
-                    engine.board.get(ress::Square::new(rank as u8, file as u8))
-                {
+                if let Some((piece, side)) = engine.board.get(ress::Square::new(rank, file)) {
                     draw_texture_ex(
                         &textures[piece as usize + 6 * side as usize],
                         x,
@@ -103,6 +125,25 @@ async fn main() {
                             ..Default::default()
                         },
                     );
+                }
+            }
+        }
+
+        if let Some(active) = active
+            && let Some((piece, side)) = engine.board.get(active)
+        {
+            let moves = engine.get_moves(piece, side, Some(active));
+            for rank in 0..ress::SIZE {
+                for file in 0..ress::SIZE {
+                    if moves.contains(ress::Square::new(rank, file).into()) {
+                        let (x, y) = square_to_screen(rank, file, flipped);
+                        draw_circle(
+                            x + GRID_SIZE / 2.0,
+                            y + GRID_SIZE / 2.0,
+                            GRID_SIZE / 4.0,
+                            BLACK.with_alpha(0.5),
+                        );
+                    }
                 }
             }
         }
