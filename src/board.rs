@@ -1,4 +1,5 @@
 use crate::bitboard::*;
+use crate::coordinates::*;
 
 use std::ops::{Index, IndexMut};
 
@@ -51,9 +52,21 @@ impl IndexMut<Side> for Board {
 
 impl Board {
     pub fn standard() -> Self {
-        Self {
+        let mut board = Self {
             pieces: [Bitboard::empty(); 6],
             sides: [Bitboard::empty(); 2],
+        };
+
+        for file in 0..SIZE {
+            board.set(Square::new(1, file), Piece::Pawn, Side::Black);
+            board.set(Square::new(6, file), Piece::Pawn, Side::White);
         }
+
+        board
+    }
+
+    fn set(&mut self, square: Square, piece: Piece, side: Side) {
+        self[piece].set(square);
+        self[side].set(square);
     }
 }

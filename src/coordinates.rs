@@ -1,14 +1,10 @@
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub struct Rank(u8);
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub struct File(u8);
+pub const SIZE: u8 = 8;
 
 /// Defined by LERF Mapping (Little endian rank file)
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Square {
-    rank: Rank,
-    file: File,
+    pub rank: u8,
+    pub file: u8,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -24,3 +20,11 @@ pub enum Compass {
 }
 
 // TODO: Maybe a square like enum with a1 a2 a3 etc...
+
+impl Square {
+    pub const fn new(rank: u8, file: u8) -> Self {
+        assert!(rank < SIZE);
+        assert!(file < SIZE);
+        Self { rank, file }
+    }
+}
