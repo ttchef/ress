@@ -17,6 +17,10 @@ impl Bitboard {
     pub fn set(&mut self, square: Square) {
         *self |= square.into();
     }
+
+    pub fn contains(&self, other: Bitboard) -> bool {
+        !(*self & other).is_empty()
+    }
 }
 
 impl BitAnd for Bitboard {

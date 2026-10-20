@@ -17,8 +17,33 @@ fn window_conf() -> Conf {
     }
 }
 
+async fn textures_init() -> Vec<Texture2D> {
+    const PATHS: [&str; 12] = [
+        "assets/textures/pieces/wp.png",
+        "assets/textures/pieces/wn.png",
+        "assets/textures/pieces/wb.png",
+        "assets/textures/pieces/wr.png",
+        "assets/textures/pieces/wq.png",
+        "assets/textures/pieces/wk.png",
+        "assets/textures/pieces/bp.png",
+        "assets/textures/pieces/bn.png",
+        "assets/textures/pieces/bb.png",
+        "assets/textures/pieces/br.png",
+        "assets/textures/pieces/bq.png",
+        "assets/textures/pieces/bk.png",
+    ];
+
+    let mut textures = Vec::with_capacity(12);
+
+    for p in PATHS {
+        textures.push(load_texture(p).await.unwrap());
+    }
+    textures
+}
+
 #[macroquad::main(window_conf)]
 async fn main() {
+    let textures = textures_init().await;
     let engine = ress::Engine::new();
 
     loop {
@@ -41,7 +66,20 @@ async fn main() {
                     },
                 );
 
-                // engine.board
+                if let Some((piece, side)) =
+                    engine.board.get(ress::Square::new(rank as u8, file as u8))
+                {
+                    draw_texture_ex(
+                        &textures[piece as usize + 6 * side as usize],
+                        x,
+                        y,
+                        WHITE,
+                        DrawTextureParams {
+                            dest_size: Some(Vec2::new(GRID_SIZE, GRID_SIZE)),
+                            ..Default::default()
+                        },
+                    );
+                }
             }
         }
 

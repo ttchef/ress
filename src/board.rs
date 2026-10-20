@@ -24,6 +24,21 @@ pub struct Board {
     sides: [Bitboard; 2],
 }
 
+impl Piece {
+    pub const ALL: [Piece; 6] = [
+        Piece::Pawn,
+        Piece::Knight,
+        Piece::Bishop,
+        Piece::Rook,
+        Piece::Queen,
+        Piece::Knight,
+    ];
+}
+
+impl Side {
+    pub const ALL: [Side; 2] = [Side::White, Side::Black];
+}
+
 impl Index<Piece> for Board {
     type Output = Bitboard;
     fn index(&self, index: Piece) -> &Self::Output {
@@ -70,13 +85,12 @@ impl Board {
         self[side].set(square);
     }
 
-    pub fn get(&self, square: Square) -> (Piece, Side) {
+    pub fn get(&self, square: Square) -> Option<(Piece, Side)> {
         let mask: Bitboard = square.into();
 
-        // for kind in self.pieces {
-        // if !(kind & mask).is_empty() {}
-        // }
+        let piece = Piece::ALL.iter().find(|&&p| self[p].contains(mask))?;
+        let side = Side::ALL.iter().find(|&&s| self[s].contains(mask))?;
 
-        (Piece::Pawn, Side::White)
+        Some((*piece, *side))
     }
 }

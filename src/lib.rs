@@ -2,7 +2,8 @@ mod bitboard;
 mod board;
 mod coordinates;
 
-use crate::board::*;
+pub use crate::board::*;
+pub use crate::coordinates::*;
 
 pub struct Engine {
     pub board: Board,
