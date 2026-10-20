@@ -25,6 +25,10 @@ impl Bitboard {
     pub fn contains(&self, other: Bitboard) -> bool {
         !(*self & other).is_empty()
     }
+
+    pub fn offset(&self, dir: Compass) -> Bitboard {
+        Bitboard(self.0 << dir as i64)
+    }
 }
 
 impl BitAnd for Bitboard {

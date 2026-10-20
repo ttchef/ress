@@ -26,3 +26,15 @@ impl Square {
         Self { rank, file }
     }
 }
+
+macro_rules! rank {
+    ($n:literal) => {
+        Bitboard(0xff << $n)
+    };
+}
+
+macro_rules! file {
+    ($n:literal) => {
+        Bitboard(0x8080808080808080 << $n)
+    };
+}
