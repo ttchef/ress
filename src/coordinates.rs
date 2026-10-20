@@ -1,3 +1,5 @@
+use crate::bitboard::Bitboard;
+
 pub const SIZE: u8 = 8;
 
 /// Defined by LERF Mapping (Little endian rank file)
@@ -25,16 +27,4 @@ impl Square {
         assert!(file < SIZE);
         Self { rank, file }
     }
-}
-
-macro_rules! rank {
-    ($n:literal) => {
-        Bitboard(0xff << $n)
-    };
-}
-
-macro_rules! file {
-    ($n:literal) => {
-        Bitboard(0x8080808080808080 << $n)
-    };
 }

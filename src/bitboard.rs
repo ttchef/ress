@@ -29,6 +29,16 @@ impl Bitboard {
     pub fn offset(&self, dir: Compass) -> Bitboard {
         Bitboard(self.0 << dir as i64)
     }
+
+    /// Zero indexed
+    pub const fn rank(n: u32) -> Bitboard {
+        Bitboard(0xff << (n * 8))
+    }
+
+    /// Zero indexed
+    pub const fn file(n: u32) -> Bitboard {
+        Bitboard(0x0101010101010101 << n)
+    }
 }
 
 impl BitAnd for Bitboard {
@@ -113,5 +123,17 @@ mod tests {
         let mut board = Bitboard::empty();
         board.set(Square::new(1, 1));
         assert_eq!(board.0, 512);
+    }
+
+    #[test]
+    fn rank() {
+        let rank4 = Bitboard::rank(4);
+        assert_eq!(rank4, Bitboard(0x000000ff00000000));
+    }
+
+    #[test]
+    fn file() {
+        let file8 = Bitboard::file(7);
+        assert_eq!(file8, Bitboard(0x8080808080808080));
     }
 }
