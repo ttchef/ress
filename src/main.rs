@@ -73,7 +73,7 @@ async fn main() {
     let mut active = None;
     let mut flipped = false;
 
-    let engine = ress::Engine::new();
+    let mut engine = ress::Engine::new();
 
     loop {
         // let dt = get_frame_time() * 1000.0;
@@ -84,9 +84,26 @@ async fn main() {
         }
 
         if is_mouse_button_pressed(MouseButton::Left) {
-            let mouse_pos = mouse_position();
-            if let Some(sq) = screen_to_square(mouse_pos.0, mouse_pos.1, flipped) {
-                active = if active == Some(sq) { None } else { Some(sq) }
+            // TODO: Clean up
+            let (mx, my) = mouse_position();
+            if let Some(sq) = screen_to_square(mx, my, flipped) {
+                let mut p = None;
+                let can_move = active.is_some_and(|from| {
+                    engine.board.get(from).is_some_and(|(piece, side)| {
+                        p = Some(piece);
+                        engine
+                            .get_moves(piece, side, Some(from))
+                            .contains(sq.into())
+                    })
+                });
+
+                if can_move {
+                    engine.make_move(p.unwrap(), active.unwrap().into(), sq.into());
+                } else if active == Some(sq) {
+                    active = None;
+                } else {
+                    active = Some(sq);
+                }
             }
         }
 

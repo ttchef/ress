@@ -37,6 +37,13 @@ impl Piece {
 
 impl Side {
     pub const ALL: [Side; 2] = [Side::White, Side::Black];
+
+    pub fn other(&self) -> Side {
+        match self {
+            Side::White => Side::Black,
+            Side::Black => Side::White,
+        }
+    }
 }
 
 impl Index<Piece> for Board {
@@ -123,18 +130,17 @@ impl Board {
         let side_board = self[side];
 
         let units = piece_board & side_board & square_mask;
-        let to_move = to_move as u8;
 
         let moves = match piece {
             Piece::Pawn => {
-                /*
-                let one_up = (units << 8) >> 16 * to_move;
-                let double_up = (units << 16) >> 32 * to_move;
-                one_up | (double_up & Bitboard(0xff << 4))
-                */
-                let single = units.offset(Compass::North, 1);
-                let double = units.offset(Compass::North, 2);
-                single | (double & Bitboard::rank(3))
+                // TODO: Implement a branch free version for this with the compass api
+                let (dir, rank) = match to_move {
+                    Side::White => (Compass::North, 3),
+                    Side::Black => (Compass::South, 4),
+                };
+                let single = units.offset(dir, 1);
+                let double = units.offset(dir, 2);
+                single | (double & Bitboard::rank(rank))
             }
             Piece::Knight => {
                 units.offset(Compass::North, 2).offset(Compass::East, 1)
@@ -172,5 +178,15 @@ impl Board {
         };
 
         moves & !side_board
+    }
+
+    pub fn make_move(&mut self, piece: Piece, side: Side, from: Bitboard, to: Bitboard) {
+        // TODO: Validate
+        // TODO: Abstract into method like unset
+        self[piece] &= !from;
+        self[piece] |= to;
+        self[side] &= !from;
+        self[side] |= to;
+        self[side.other()] &= !to;
     }
 }

@@ -1,6 +1,6 @@
 use crate::coordinates::*;
 
-use std::ops::{BitAnd, BitOr, BitOrAssign, Not, Shl, Shr};
+use std::ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, Not, Shl, Shr};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Bitboard(pub u64);
@@ -66,6 +66,12 @@ impl BitAnd for Bitboard {
     type Output = Self;
     fn bitand(self, rhs: Self) -> Self::Output {
         Bitboard(self.0 & rhs.0)
+    }
+}
+
+impl BitAndAssign for Bitboard {
+    fn bitand_assign(&mut self, rhs: Self) {
+        self.0 &= rhs.0;
     }
 }
 

@@ -23,4 +23,9 @@ impl Engine {
         self.board
             .get_pseudo_legal_moves(piece, side, square, self.to_move)
     }
+
+    pub fn make_move(&mut self, piece: Piece, from: Bitboard, to: Bitboard) {
+        self.board.make_move(piece, self.to_move, from, to);
+        self.to_move = self.to_move.other();
+    }
 }
