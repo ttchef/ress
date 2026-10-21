@@ -48,7 +48,7 @@ impl Bitboard {
             flood |= g;
             g = g.offset(dir, 1) & pro;
         }
-        flood
+        flood.offset(dir, 1)
     }
 
     /// Zero indexed

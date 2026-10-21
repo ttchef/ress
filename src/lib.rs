@@ -20,8 +20,10 @@ impl Engine {
     }
 
     pub fn get_moves(&self, piece: Piece, side: Side, square: Option<Square>) -> Bitboard {
-        self.board
-            .get_pseudo_legal_moves(piece, side, square, self.to_move)
+        if side != self.to_move {
+            return Bitboard::empty();
+        }
+        self.board.get_pseudo_legal_moves(piece, side, square)
     }
 
     pub fn make_move(&mut self, piece: Piece, from: Bitboard, to: Bitboard) {

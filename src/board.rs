@@ -119,7 +119,6 @@ impl Board {
         piece: Piece,
         side: Side,
         square: Option<Square>,
-        to_move: Side,
     ) -> Bitboard {
         let square_mask = match square {
             Some(sq) => sq.into(),
@@ -130,11 +129,12 @@ impl Board {
         let side_board = self[side];
 
         let units = piece_board & side_board & square_mask;
+        let empty = !(self[Side::White] | self[Side::Black]);
 
         let moves = match piece {
             Piece::Pawn => {
                 // TODO: Implement a branch free version for this with the compass api
-                let (dir, rank) = match to_move {
+                let (dir, rank) = match side {
                     Side::White => (Compass::North, 3),
                     Side::Black => (Compass::South, 4),
                 };
@@ -153,28 +153,37 @@ impl Board {
                     | units.offset(Compass::South, 1).offset(Compass::West, 2)
             }
             Piece::Rook => {
-                units.dumb7fill(Compass::North, !(self.sides[0] | self.sides[1]))
-                    | units.dumb7fill(Compass::South, !(self.sides[0] | self.sides[1]))
-                    | units.dumb7fill(Compass::East, !(self.sides[0] | self.sides[1]))
-                    | units.dumb7fill(Compass::West, !(self.sides[0] | self.sides[1]))
+                units.dumb7fill(Compass::North, empty)
+                    | units.dumb7fill(Compass::South, empty)
+                    | units.dumb7fill(Compass::East, empty)
+                    | units.dumb7fill(Compass::West, empty)
             }
             Piece::Bishop => {
-                units.dumb7fill(Compass::NorthEast, !(self.sides[0] | self.sides[1]))
-                    | units.dumb7fill(Compass::SouthEast, !(self.sides[0] | self.sides[1]))
-                    | units.dumb7fill(Compass::NorthWest, !(self.sides[0] | self.sides[1]))
-                    | units.dumb7fill(Compass::SouthWest, !(self.sides[0] | self.sides[1]))
+                units.dumb7fill(Compass::NorthEast, empty)
+                    | units.dumb7fill(Compass::SouthEast, empty)
+                    | units.dumb7fill(Compass::NorthWest, empty)
+                    | units.dumb7fill(Compass::SouthWest, empty)
             }
             Piece::Queen => {
-                units.dumb7fill(Compass::North, !(self.sides[0] | self.sides[1]))
-                    | units.dumb7fill(Compass::South, !(self.sides[0] | self.sides[1]))
-                    | units.dumb7fill(Compass::East, !(self.sides[0] | self.sides[1]))
-                    | units.dumb7fill(Compass::NorthEast, !(self.sides[0] | self.sides[1]))
-                    | units.dumb7fill(Compass::SouthEast, !(self.sides[0] | self.sides[1]))
-                    | units.dumb7fill(Compass::NorthWest, !(self.sides[0] | self.sides[1]))
-                    | units.dumb7fill(Compass::SouthWest, !(self.sides[0] | self.sides[1]))
-                    | units.dumb7fill(Compass::West, !(self.sides[0] | self.sides[1]))
+                units.dumb7fill(Compass::North, empty)
+                    | units.dumb7fill(Compass::South, empty)
+                    | units.dumb7fill(Compass::East, empty)
+                    | units.dumb7fill(Compass::NorthEast, empty)
+                    | units.dumb7fill(Compass::SouthEast, empty)
+                    | units.dumb7fill(Compass::NorthWest, empty)
+                    | units.dumb7fill(Compass::SouthWest, empty)
+                    | units.dumb7fill(Compass::West, empty)
             }
-            _ => units,
+            Piece::King => {
+                units.offset(Compass::North, 1)
+                    | units.offset(Compass::South, 1)
+                    | units.offset(Compass::East, 1)
+                    | units.offset(Compass::West, 1)
+                    | units.offset(Compass::NorthEast, 1)
+                    | units.offset(Compass::SouthEast, 1)
+                    | units.offset(Compass::NorthWest, 1)
+                    | units.offset(Compass::SouthWest, 1)
+            }
         };
 
         moves & !side_board
@@ -183,6 +192,9 @@ impl Board {
     pub fn make_move(&mut self, piece: Piece, side: Side, from: Bitboard, to: Bitboard) {
         // TODO: Validate
         // TODO: Abstract into method like unset
+        for p in Piece::ALL {
+            self[p] &= !to;
+        }
         self[piece] &= !from;
         self[piece] |= to;
         self[side] &= !from;
