@@ -26,8 +26,29 @@ impl Bitboard {
         !(*self & other).is_empty()
     }
 
-    pub fn offset(&self, dir: Compass) -> Bitboard {
-        Bitboard(self.0 << dir as i64)
+    pub fn offset(&self, dir: Compass, steps: u8) -> Bitboard {
+        // TODO: Branchless version with rotate left and wrap mask
+        let offset = dir as i32 * steps as i32;
+        if offset > 0 {
+            Bitboard(self.0 << offset)
+        } else if offset < 0 {
+            Bitboard(self.0 >> offset.abs())
+        } else {
+            Bitboard::empty()
+        }
+    }
+
+    // TODO: Replace by something a little more performant like
+    // Kogge-Stone or even a lookup with magic bitboards
+    pub fn dumb7fill(&self, dir: Compass, pro: Bitboard) -> Bitboard {
+        // TODO: Wrap arounds
+        let mut g = *self;
+        let mut flood = Bitboard(0);
+        while !g.is_empty() {
+            flood |= g;
+            g = g.offset(dir, 1) & pro;
+        }
+        flood
     }
 
     /// Zero indexed
@@ -135,5 +156,37 @@ mod tests {
     fn file() {
         let file8 = Bitboard::file(7);
         assert_eq!(file8, Bitboard(0x8080808080808080));
+    }
+
+    #[test]
+    fn offset0() {
+        let bb = Bitboard(0b001);
+        assert_eq!(bb.offset(Compass::East, 2), Bitboard(0b100))
+    }
+
+    #[test]
+    fn offset1() {
+        let bb = Bitboard(0b0000_0010_0000_0000);
+        assert_eq!(
+            bb.offset(Compass::South, 1),
+            Bitboard(0b0000_0000_0000_0010)
+        );
+    }
+
+    #[test]
+    fn offset2() {
+        let bb = Bitboard(0b0000_0010_0000_0000);
+        assert_eq!(
+            bb.offset(Compass::North, 1),
+            Bitboard(0b0000_0010_0000_0000_0000_0000)
+        );
+    }
+
+    #[test]
+    fn offset3() {
+        let bb = Bitboard(
+            0b0010_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000,
+        );
+        assert_eq!(bb.offset(Compass::North, 1), Bitboard(0));
     }
 }

@@ -1,5 +1,3 @@
-use crate::bitboard::Bitboard;
-
 pub const SIZE: u8 = 8;
 
 /// Defined by LERF Mapping (Little endian rank file)

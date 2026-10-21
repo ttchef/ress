@@ -127,9 +127,46 @@ impl Board {
 
         let moves = match piece {
             Piece::Pawn => {
+                /*
                 let one_up = (units << 8) >> 16 * to_move;
                 let double_up = (units << 16) >> 32 * to_move;
                 one_up | (double_up & Bitboard(0xff << 4))
+                */
+                let single = units.offset(Compass::North, 1);
+                let double = units.offset(Compass::North, 2);
+                single | (double & Bitboard::rank(3))
+            }
+            Piece::Knight => {
+                units.offset(Compass::North, 2).offset(Compass::East, 1)
+                    | units.offset(Compass::North, 2).offset(Compass::West, 1)
+                    | units.offset(Compass::South, 2).offset(Compass::East, 1)
+                    | units.offset(Compass::South, 2).offset(Compass::West, 1)
+                    | units.offset(Compass::North, 1).offset(Compass::East, 2)
+                    | units.offset(Compass::North, 1).offset(Compass::West, 2)
+                    | units.offset(Compass::South, 1).offset(Compass::East, 2)
+                    | units.offset(Compass::South, 1).offset(Compass::West, 2)
+            }
+            Piece::Rook => {
+                units.dumb7fill(Compass::North, !(self.sides[0] | self.sides[1]))
+                    | units.dumb7fill(Compass::South, !(self.sides[0] | self.sides[1]))
+                    | units.dumb7fill(Compass::East, !(self.sides[0] | self.sides[1]))
+                    | units.dumb7fill(Compass::West, !(self.sides[0] | self.sides[1]))
+            }
+            Piece::Bishop => {
+                units.dumb7fill(Compass::NorthEast, !(self.sides[0] | self.sides[1]))
+                    | units.dumb7fill(Compass::SouthEast, !(self.sides[0] | self.sides[1]))
+                    | units.dumb7fill(Compass::NorthWest, !(self.sides[0] | self.sides[1]))
+                    | units.dumb7fill(Compass::SouthWest, !(self.sides[0] | self.sides[1]))
+            }
+            Piece::Queen => {
+                units.dumb7fill(Compass::North, !(self.sides[0] | self.sides[1]))
+                    | units.dumb7fill(Compass::South, !(self.sides[0] | self.sides[1]))
+                    | units.dumb7fill(Compass::East, !(self.sides[0] | self.sides[1]))
+                    | units.dumb7fill(Compass::NorthEast, !(self.sides[0] | self.sides[1]))
+                    | units.dumb7fill(Compass::SouthEast, !(self.sides[0] | self.sides[1]))
+                    | units.dumb7fill(Compass::NorthWest, !(self.sides[0] | self.sides[1]))
+                    | units.dumb7fill(Compass::SouthWest, !(self.sides[0] | self.sides[1]))
+                    | units.dumb7fill(Compass::West, !(self.sides[0] | self.sides[1]))
             }
             _ => units,
         };

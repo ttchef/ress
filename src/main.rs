@@ -71,7 +71,7 @@ fn screen_to_square(x: f32, y: f32, flipped: bool) -> Option<ress::Square> {
 async fn main() {
     let textures = textures_init().await;
     let mut active = None;
-    let mut flipped = true;
+    let mut flipped = false;
 
     let engine = ress::Engine::new();
 
